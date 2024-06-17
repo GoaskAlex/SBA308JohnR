@@ -1,7 +1,7 @@
 import {CourseInfo,AssignmentGroup,LearnerSubmissions} from './data.js';
 
 function getLearnerData(course, ag, submissions) {
-    const results = [];
+    let results = [];
     const courseValues = Object.values(CourseInfo);
     const courseId = courseValues[0];
     const courseName = courseValues[1];
@@ -40,32 +40,50 @@ function getLearnerData(course, ag, submissions) {
 
     submissions = LearnerSubmissions;
     let subKeys= Object.values(submissions);
-    let learnerIds =[]
-    let learnerSubs=[]
-      for (let subKey of subKeys){
-        learnerIds.push(subKey)
+    let learnerIds=[]
+    let learnerSubs = [];
+        for (let subKey of subKeys){
+              learnerIds.push(subKey)
+              }
+
+        for (let subKey of learnerIds){
+        learnerSubs.push(subKey.submission)
         }
-  for (let subKey of learnerIds){
-    learnerSubs.push(subKey.submission)
-  }
-  console.log(learnerIds);
-  console.log(learnerSubs);
+  
 
   if (learnerIds.assignment_id === assignments.id){
-        console.log('true');
         for (let i = 0; i < learnerIds.length; i++) {
             const assignmentId = learnerIds[i].assignment_id;
             const assignment = assignments.find(a => a.id === assignmentId);
             const submission = learnerSubs[i];
-            if (assignment && new Date(assignment.due_at) < new Date(submission.submitted_at)) {
-                console.log("This is late for learner " + learnerIds[i].learner_id);
-              } else {
-                console.log("This is not late for learner " + learnerIds[i].learner_id);
+            if (assignment && new Date(assignment.due_at) >= new Date(submission.submitted_at)) {
+              console.log("This is not late for learner " + learnerIds[i].learner_id);
+                if(assignment.id === assignmentId){
+                  const courseTotal = 150;
+                  submission.score = submission.score/assignment.points_possible
+
+                  results.push({
+                    learner_id: learnerIds[i].learner_id,
+                    assignmentId: assignmentId,
+                    score: submission.score
+                  });
+                }
+
+            } else {
+              console.log("This is late for learner " + learnerIds[i].learner_id);
+              submission.score = (submission.score-assignment.points_possible*.10)/assignment.points_possible
+              results.push({
+                learner_id: learnerIds[i].learner_id,
+                assignmentId: assignmentId,
+                score: submission.score
+              });
               }
             }
   }else{
     console.log('Assignment does not exist');
   }
+  results = results.filter(result => result.assignmentId !== 3);
+  console.log(results);
 
 }   
 getLearnerData("Introduction to JavaScript", "Fundamentals of JavaScript", LearnerSubmissions);
